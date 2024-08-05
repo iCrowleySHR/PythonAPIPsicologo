@@ -7,6 +7,16 @@ RUN apt-get update && \
     wget \
     unzip \
     gnupg2 \
+    libnss3 \
+    libgbm-dev \
+    libxcomposite1 \
+    libxrandr2 \
+    libxdamage1 \
+    libxss1 \
+    libxtst6 \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libgtk-3-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Adicionar o repositório do Google Chrome e instalar o Chrome
@@ -18,14 +28,15 @@ RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add
 # Instalar o ChromeDriver
 RUN wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/$(curl -s https://chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip && \
     unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
-    rm /tmp/chromedriver.zip
+    rm /tmp/chromedriver.zip && \
+    chmod +x /usr/local/bin/chromedriver
 
 # Definir o diretório de trabalho
 WORKDIR /app
 
 # Copiar o arquivo de requisitos e instalar dependências
 COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar o código da aplicação
 COPY . .
