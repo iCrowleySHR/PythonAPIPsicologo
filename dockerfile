@@ -19,23 +19,17 @@ RUN apt-get update && \
     libgtk-3-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Definir a versão desejada do Google Chrome e do ChromeDriver
-ENV CHROME_VERSION=114.0.5735.90
-ENV CHROMEDRIVER_VERSION=114.0.5735.90
-
 # Adicionar o repositório do Google Chrome e instalar o Chrome
 RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - && \
     sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' && \
     apt-get update && \
-    apt-get install -y \
-    google-chrome-stable=${CHROME_VERSION}* && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y google-chrome-stable
 
 # Instalar o ChromeDriver correspondente
-RUN wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip && \
-    unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
-    rm /tmp/chromedriver.zip && \
+RUN CHROMEDRIVER_VERSION=$(wget -q -O - https://chromedriver.storage.googleapis.com/LATEST_RELEASE) && \
+    wget -O /tmp/chromedriver_linux64.zip https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip && \
+    unzip /tmp/chromedriver_linux64.zip -d /usr/local/bin/ && \
+    rm /tmp/chromedriver_linux64.zip && \
     chmod +x /usr/local/bin/chromedriver
 
 # Definir o diretório de trabalho
