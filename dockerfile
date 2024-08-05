@@ -1,36 +1,48 @@
-# Use uma imagem base do Python
-FROM python:3.11-slim
+# Usar uma imagem base do Python
+FROM python:3.9-slim
 
-# Instale dependências do sistema
-RUN apt-get update && apt-get install -y \
+# Instalar dependências
+RUN apt-get update && \
+    apt-get install -y \
     wget \
-    curl \
     unzip \
-    gnupg \
+    libnss3 \
     libgconf-2-4 \
-    && wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
-    && dpkg -i google-chrome-stable_current_amd64.deb \
-    && apt-get -f install -y \
-    && rm -f google-chrome-stable_current_amd64.deb
+    libfontconfig1 \
+    libx11-xcb1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    libxtst6 \
+    libnss3-dev \
+    libappindicator3-1 \
+    && rm -rf /var/lib/apt/lists/*
 
-# Instale o ChromeDriver
-RUN CHROME_VERSION=$(google-chrome --version | sed 's/^Google Chrome //') \
-    && CHROME_DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION) \
-    && wget https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip \
-    && unzip chromedriver_linux64.zip \
-    && mv chromedriver /usr/local/bin/chromedriver \
-    && chmod +x /usr/local/bin/chromedriver \
-    && rm -f chromedriver_linux64.zip
+# Instalar o Google Chrome
+RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
+    dpkg -i google-chrome-stable_current_amd64.deb && \
+    apt-get -f install -y && \
+    rm google-chrome-stable_current_amd64.deb
 
-# Copie os arquivos de dependências e instale as dependências Python
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Instalar o ChromeDriver
+RUN wget https://chromedriver.storage.googleapis.com/2.46/chromedriver_linux64.zip && \
+    unzip chromedriver_linux64.zip && \
+    mv chromedriver /usr/local/bin/chromedriver && \
+    chmod +x /usr/local/bin/chromedriver && \
+    rm chromedriver_linux64.zip
 
-# Copie o código da aplicação
+# Definir o diretório de trabalho
+WORKDIR /app
+
+# Copiar o arquivo de requisitos e instalar dependências
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt
+
+# Copiar o código da aplicação
 COPY . .
 
-# Exponha a porta da aplicação
+# Expor a porta que a aplicação Flask usará
 EXPOSE 5000
 
-# Comando para rodar a aplicação
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
+# Comando para iniciar a aplicação
+CMD ["python", "main.py"]
