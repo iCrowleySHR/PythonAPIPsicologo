@@ -19,8 +19,9 @@ RUN apt-get update && \
     libgtk-3-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Definir a versão desejada do Google Chrome e ChromeDriver
-ENV CHROME_VERSION 114.0.5735.90
+# Definir a versão desejada do Google Chrome e do ChromeDriver
+ENV CHROME_VERSION=114.0.5735.90
+ENV CHROMEDRIVER_VERSION=114.0.5735.90
 
 # Adicionar o repositório do Google Chrome e instalar o Chrome
 RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - && \
@@ -32,7 +33,7 @@ RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add
     rm -rf /var/lib/apt/lists/*
 
 # Instalar o ChromeDriver correspondente
-RUN wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/${CHROME_VERSION}/chromedriver_linux64.zip && \
+RUN wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip && \
     unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
     rm /tmp/chromedriver.zip && \
     chmod +x /usr/local/bin/chromedriver
