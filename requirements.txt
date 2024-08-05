@@ -1,5 +1,6 @@
 Flask
 selenium
-bs4
+beautifulsoup4
 webdriver-manager
 lxml
+gunicorn

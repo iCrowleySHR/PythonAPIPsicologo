@@ -1,7 +1,7 @@
 # Use uma imagem base do Python
 FROM python:3.11-slim
 
-# Instale dependências do sistema e o Google Chrome
+# Instale dependências do sistema
 RUN apt-get update && apt-get install -y \
     wget \
     curl \
@@ -33,4 +33,4 @@ COPY . .
 EXPOSE 5000
 
 # Comando para rodar a aplicação
-CMD ["python", "app.py"]
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
