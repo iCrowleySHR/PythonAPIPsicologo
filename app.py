@@ -51,13 +51,13 @@ def search_psychologist():
         
         # Preenchendo e enviando os dados
         input_nome.send_keys(nome)
-        btn_busca_avancada.click()
+        # btn_busca_avancada.click()
         
-        # Espera até que o campo de CPF esteja visível e disponível para inserção
-        WebDriverWait(driver, 40).until(
-            EC.visibility_of(input_cpf)
-        )
-        input_cpf.send_keys(cpf)
+        # # Espera até que o campo de CPF esteja visível e disponível para inserção
+        # WebDriverWait(driver, 40).until(
+        #     EC.visibility_of(input_cpf)
+        # )
+        # input_cpf.send_keys(cpf)
         time.sleep(2)
         btn_buscar.click()
 
@@ -93,4 +93,4 @@ def search_psychologist():
         driver.quit()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
