@@ -69,7 +69,7 @@ def search_psychologist():
         btn_buscar.click()
 
         # Espera até que o resultado esteja presente
-        resultado_html = WebDriverWait(driver, 550).until(
+        resultado_html = WebDriverWait(driver, 750).until(
             EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/article/div/div/div[2]/div/div/table'))
         ).get_attribute('outerHTML')
 
