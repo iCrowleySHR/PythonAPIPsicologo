@@ -1,3 +1,6 @@
-flask
+Flask
 selenium
+beautifulsoup4
 webdriver-manager
+lxml
+gunicorn

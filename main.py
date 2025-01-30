@@ -6,11 +6,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support import expected_conditions as EC
+from bs4 import BeautifulSoup
 import time
+import os
 
 app = Flask(__name__)
-
-# Caminho para o ChromeDriver
 
 @app.route('/search_psychologist', methods=['POST'])
 def search_psychologist():
@@ -22,11 +22,14 @@ def search_psychologist():
         return jsonify({'error': 'Nome e CPF são obrigatórios.'}), 400
 
     # Configurando o WebDriver
-
-
-# Configurando o WebDriver com WebDriver Manager
-    service = Service(ChromeDriverManager().install())
     options = Options()
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--headless')  # Execute o Chrome em modo headless
+    driver_path = '/usr/local/bin/chromedriver'
+    
+    # Definindo o caminho do ChromeDriver e do Chrome
+    service = Service(driver_path)
     driver = webdriver.Chrome(service=service, options=options)
 
     try:
@@ -62,15 +65,33 @@ def search_psychologist():
         WebDriverWait(driver, 40).until(
             EC.visibility_of(input_cpf)
         )
-        # input_cpf.send_keys(cpf)
+        input_cpf.send_keys(cpf)
+        time.sleep(2)
         btn_buscar.click()
 
         # Espera até que o resultado esteja presente
-        resultado = WebDriverWait(driver, 550).until(
-            EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/article/div/div/div[2]/div/div/table/tbody'))  # Substitua pelo XPath real do resultado
-        ).text
+        resultado_html = WebDriverWait(driver, 750).until(
+            EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/article/div/div/div[2]/div/div/table'))
+        ).get_attribute('outerHTML')
 
-        return jsonify({'status': 'success', 'resultado': resultado})
+        # Usando BeautifulSoup para analisar o HTML
+        soup = BeautifulSoup(resultado_html, 'lxml')
+        tabela = soup.find('table')
+        linhas = tabela.find('tbody').find_all('tr')
+
+        resultados = []
+        for linha in linhas:
+            colunas = linha.find_all('td')
+            resultado = {
+                'Status': colunas[0].text.strip() if len(colunas) > 0 else '',
+                'Nome': colunas[1].text.strip() if len(colunas) > 1 else '',
+                'Região': colunas[2].text.strip() if len(colunas) > 2 else '',
+                'Número do Registro': colunas[3].text.strip() if len(colunas) > 3 else '',
+                'Data de Registro': colunas[4].text.strip() if len(colunas) > 4 else ''
+            }
+            resultados.append(resultado)
+
+        return jsonify({'status': 'success', 'resultados': resultados})
 
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
@@ -80,4 +101,4 @@ def search_psychologist():
         driver.quit()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
