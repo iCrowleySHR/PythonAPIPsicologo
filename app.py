@@ -4,12 +4,13 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support import expected_conditions as EC
+import time
 
 app = Flask(__name__)
 
 # Caminho para o ChromeDriver
-CHROMEDRIVER_PATH = 'C:\\Users\\Gustavo Gualda\\AppData\\Local\\Programs\\Python\\Python312\\chromedriver.exe'
 
 @app.route('/search_psychologist', methods=['POST'])
 def search_psychologist():
@@ -21,7 +22,10 @@ def search_psychologist():
         return jsonify({'error': 'Nome e CPF são obrigatórios.'}), 400
 
     # Configurando o WebDriver
-    service = Service(CHROMEDRIVER_PATH)
+
+
+# Configurando o WebDriver com WebDriver Manager
+    service = Service(ChromeDriverManager().install())
     options = Options()
     driver = webdriver.Chrome(service=service, options=options)
 
@@ -33,13 +37,13 @@ def search_psychologist():
         # Espera até que o campo de input 'nomepsi' esteja presente
         input_nome = WebDriverWait(driver, 40).until(
             EC.presence_of_element_located((By.XPATH, '//*[@id="nomepsi"]'))
-        )
+        )   
 
         # Espera até que o botão 'btn_busca_avancada' esteja presente
         btn_busca_avancada = WebDriverWait(driver, 40).until(
             EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/article/div/div/div[2]/form/div[3]/button[2]'))
         )
-        
+        time.sleep(5)
         # Espera até que o campo de input 'cpf' esteja presente
         input_cpf = WebDriverWait(driver, 40).until(
             EC.presence_of_element_located((By.XPATH, '//*[@id="cpf"]'))
