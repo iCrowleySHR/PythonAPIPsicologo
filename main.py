@@ -18,8 +18,8 @@ def search_psychologist():
     nome = data.get('nome')
     cpf = data.get('cpf')
 
-    if not nome or not cpf:
-        return jsonify({'error': 'Nome e CPF são obrigatórios.'}), 400
+    if not nome and not cpf:
+        return jsonify({'status': 'error', 'message': 'É necessário informar pelo menos um dos campos: nome ou CPF.'}), 400
 
     # Configurando o WebDriver
     options = Options()
@@ -37,47 +37,53 @@ def search_psychologist():
         url = 'https://cadastro.cfp.org.br/'
         driver.get(url)
 
-        # Espera até que o campo de input 'nomepsi' esteja presente
-        input_nome = WebDriverWait(driver, 40).until(
-            EC.presence_of_element_located((By.XPATH, '//*[@id="nomepsi"]'))
-        )   
+        # Se nome foi enviado, preenche o campo correspondente
+        if nome:
+            input_nome = WebDriverWait(driver, 40).until(
+                EC.presence_of_element_located((By.XPATH, '//*[@id="nomepsi"]'))
+            )
+            input_nome.send_keys(nome)
 
-        # Espera até que o botão 'btn_busca_avancada' esteja presente
-        btn_busca_avancada = WebDriverWait(driver, 40).until(
-            EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/article/div/div/div[2]/form/div[3]/button[2]'))
-        )
-        time.sleep(5)
-        # Espera até que o campo de input 'cpf' esteja presente
-        input_cpf = WebDriverWait(driver, 40).until(
-            EC.presence_of_element_located((By.XPATH, '//*[@id="cpf"]'))
-        )
-        
-        # Espera até que o botão 'btn_buscar' esteja presente
+        # Se CPF foi enviado, clica na busca avançada e preenche o campo correspondente
+        if cpf:
+            btn_busca_avancada = WebDriverWait(driver, 40).until(
+                EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/article/div/div/div[2]/form/div[3]/button[2]'))
+            )
+            btn_busca_avancada.click()
+
+            input_cpf = WebDriverWait(driver, 40).until(
+                EC.presence_of_element_located((By.XPATH, '//*[@id="cpf"]'))
+            )
+
+            WebDriverWait(driver, 40).until(EC.visibility_of(input_cpf))
+            input_cpf.send_keys(cpf)
+
+        # Clicar no botão de busca
         btn_buscar = WebDriverWait(driver, 40).until(
             EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/article/div/div/div[2]/form/div[3]/button[1]'))
         )
-        
-        # Preenchendo e enviando os dados
-        input_nome.send_keys(nome)
-        btn_busca_avancada.click()
-        
-        # Espera até que o campo de CPF esteja visível e disponível para inserção
-        WebDriverWait(driver, 40).until(
-            EC.visibility_of(input_cpf)
-        )
-        input_cpf.send_keys(cpf)
-        time.sleep(2)
+        time.sleep(5)
+        btn_buscar.click()
+        btn_buscar.click()
         btn_buscar.click()
 
-        # Espera até que o resultado esteja presente
-        resultado_html = WebDriverWait(driver, 750).until(
+        # Espera até que os resultados apareçam
+        resultado_html = WebDriverWait(driver, 50).until(
             EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/article/div/div/div[2]/div/div/table'))
         ).get_attribute('outerHTML')
 
         # Usando BeautifulSoup para analisar o HTML
         soup = BeautifulSoup(resultado_html, 'lxml')
         tabela = soup.find('table')
-        linhas = tabela.find('tbody').find_all('tr')
+
+        if not tabela:
+            return jsonify({'status': 'error', 'message': 'Nenhuma tabela encontrada.'}), 404
+
+        tbody = tabela.find('tbody')
+        if not tbody:
+            return jsonify({'status': 'error', 'message': 'Nenhum dado na tabela.'}), 404
+
+        linhas = tbody.find_all('tr')
 
         resultados = []
         for linha in linhas:
@@ -90,6 +96,9 @@ def search_psychologist():
                 'Data de Registro': colunas[4].text.strip() if len(colunas) > 4 else ''
             }
             resultados.append(resultado)
+            
+        if not resultados:
+            return jsonify({'status': 'error', 'message': 'Nenhum resultado encontrado.'}), 404
 
         return jsonify({'status': 'success', 'resultados': resultados})
 
@@ -97,7 +106,6 @@ def search_psychologist():
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
     finally:
-        # Fechando o navegador
         driver.quit()
 
 if __name__ == '__main__':
