@@ -4,11 +4,10 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 import time
-import os
 
 app = Flask(__name__)
 
@@ -23,14 +22,7 @@ def search_psychologist():
 
     # Configurando o WebDriver
     options = Options()
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--headless')  # Execute o Chrome em modo headless
-    driver_path = '/usr/local/bin/chromedriver'
-    
-    # Definindo o caminho do ChromeDriver e do Chrome
-    service = Service(driver_path)
-    driver = webdriver.Chrome(service=service, options=options)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
     try:
         # Acessando o site
@@ -109,4 +101,4 @@ def search_psychologist():
         driver.quit()
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True)
