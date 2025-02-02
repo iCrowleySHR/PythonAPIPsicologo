@@ -81,4 +81,4 @@ pip install flask selenium webdriver-manager beautifulsoup4 lxml
 
 ---
 
-Desenvolvido por 🚀 [Seu Nome]
+Desenvolvido por 🚀 [Gustavo Gualda]
